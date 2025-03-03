@@ -1,0 +1,312 @@
+<odoo>
+    <data>
+
+        <record id="ir_seq_hr_contract" model="ir.sequence">
+            <field name="name">RRHH Contratos Empleados</field>
+            <field name="code">hr.contract.seq</field>
+            <field name="prefix">CTO/</field>
+            <field name="padding">6</field>
+            <field name="number_increment">1</field>
+            <field name="use_date_range">True</field>
+            <field name="number_next_actual">1</field>
+            <field name="implementation">standard</field>
+        </record>
+
+        <!-- Crear record rule para filtrar las sucursales - Contratos -->
+        <record id="rule_employee_contract_lavish_res_branch" model="ir.rule">
+            <field name="name">Permisos sucursales contratos empleados</field>
+            <field name="model_id" ref="model_hr_contract"/>
+            <field name="domain_force"> ['|',('employee_id.branch_id','in',user.branch_ids.ids),('employee_id.branch_id','=',False)]
+            </field>
+        </record>
+
+        <!-- Formulario de contratos - ajustes -->
+        <record id="view_lavish_hr_employee_form_contract" model="ir.ui.view">
+            <field name="name">hr.contract.lavish.hr.employee.form.inherit</field>
+            <field name="model">hr.contract</field>
+            <field name="priority">20</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form[1]/header[1]/field[@name='state']" position="before">
+                    <button string="Activar" name="action_state_open" invisible="state != 'draft'" type="object"/>
+                    <button string="Finalizar por liquidar" name="action_state_finished" type="object" invisible="state != 'open'"/>
+                    <button string="Cancelar" name="action_state_cancel" type="object"/>
+                    <button string="Certificado Laboral" name="generate_labor_certificate" type="object"/>
+                    <button name="generate_report_severance" type="object" string="Carta retiro de cesantías"/>
+                </xpath>
+                <xpath expr="//group[@name='top_info_left']" position="attributes">
+                    
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[@name='top_info_right']" position="attributes">
+                    
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <field name="name" position="after">
+                    <br/>
+                    <field name="sequence" force_save="1" readonly="1"/></field>
+                <xpath expr="//form[1]/header[1]/field[@name='state']" position="attributes">
+                    
+                    <attribute name="options">{}</attribute>
+                    <attribute name="force_save">True</attribute>
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='active']" position="before">
+                    <field name="view_inherit_employee" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='department_id']" position="after"/>
+                <xpath expr="//field[@name='job_id']" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                    <attribute name="force_save">True</attribute>
+                </xpath>
+                <xpath expr="//group" position="after">
+                    <group>
+                        <group string="Datos de contrato" col="2" class="text-start" style="border:1px solid black; padding:5px; border-radius:10px">
+                            <field name="employee_id" widget="many2one_avatar_employee" options="{'relation': 'hr.employee.public'}"/>
+                            <field name="department_id" groups="!hr_contract.group_hr_contract_manager" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="department_id" groups="hr_contract.group_hr_contract_manager"/>
+                            <field name="job_id" groups="!hr_contract.group_hr_contract_manager" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="job_id" groups="hr_contract.group_hr_contract_manager"/>
+                            <field name="date_start" string="Fecha Inicio de contracto"/>
+                            <field name="date_end" string="Fecha Fin de contracto" required="contract_type != 'indefinido'"/>
+                            <field name="trial_date_start"/>
+                            <field name="trial_date_end"/>
+                            <field name="retirement_date" readonly="1" force_save="1"/>
+                            <field name="company_country_id" invisible="1"/>
+                            <field name="country_code" invisible="1"/>
+                            <field name="contract_type"/>
+                            <field name="subcontract_type"/>
+                            <field name="type_employee" invisible="1"/>
+                            <field name="modality_salary"/>
+                            <field name="modality_aux"/>
+                            <field name="method_schedule_pay" widget="radio"/>
+                            <field name="risk_id" required="1"/>
+                            <field name="economic_activity_level_risk_id" domain="[('risk_class_id','=',risk_id)]"/>
+                        </group>
+                        <group string="Configuracion del Empleado" col="2" class="text-start" style="border:1px solid black; padding:5px; border-radius:10px">
+                            <field name="ley_2101" class="fa fa-arrow-down red" widget="boolean_toggle"/>
+                            <field name="skip_commute_allowance" class="fa fa-forward red" widget="boolean_toggle"/>
+                            <field name="remote_work_allowance" class="fa fa-home red" widget="boolean_toggle"/>
+                            <field name="minimum_wage" class="fa fa-minus red" widget="boolean_toggle"/>
+                            <field name="not_validate_top_auxtransportation" class="fa fa-check red" widget="boolean_toggle"/>
+                            <field name="not_pay_overtime" class="fa fa-hourglass  red" widget="boolean_toggle"/>
+                            <field name="pay_auxtransportation" widget="boolean_toggle"/>
+                            <field name="proyectar_fondos" widget="boolean_toggle"/>
+                            <field name="proyectar_ret" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Sena" col="2" class="text-start" style="border:1px solid black; padding:5px; border-radius:10px">
+                            <field name="code_sena"/>
+                            <field name="apr_prod_date"/>
+                        </group>
+                        <group decoration-it="1" string="Ultimos Saldo de Provisiones, Usar para casos de una primera implementación en odoo o Cambio de metodo de provision " class="text-start" style="border:1px solid black; padding:5px; border-radius:10px">
+                            <field name="date_prima"/>
+                            <field name="u_prima"/>
+                            <field name="date_cesantias"/>
+                            <field name="u_cesantias"/>
+                            <field name="date_vacaciones"/>
+                            <field name="u_vacaciones"/>
+                        </group>
+                    </group>
+                    <group string="Otros Datos">
+                        <field name="company_country_id" invisible="1"/>
+                        <field name="country_code" invisible="1"/>
+                        <field name="hr_responsible_id" required="1"/>
+                        <field name="structure_type_id" groups="!hr_contract.group_hr_contract_manager" domain="['|', ('country_id', '=', False), ('country_id', '=', company_country_id)]" options="{'no_open': True, 'no_create': True}"/>
+                        <field name="structure_type_id" groups="hr_contract.group_hr_contract_manager" domain="['|', ('country_id', '=', False), ('country_id', '=', company_country_id)]"/>
+                        <field name="calendar_mismatch" invisible="1"/>
+                        <label for="resource_calendar_id"/>
+                        <div id="resource_calendar_warning" class="d-flex align-items-center">
+                                <field name="resource_calendar_id" groups="!hr_contract.group_hr_contract_manager" required="1" options="{'no_open': True, 'no_create': True}"/>
+                                <field name="resource_calendar_id" groups="hr_contract.group_hr_contract_manager" required="1"/>
+                                <widget name="contract_warning_tooltip" invisible="not calendar_mismatch or state != 'open'"/>
+                        </div>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='job_id']" position="after"/>
+                <xpath expr="//field[@name='date_end']" position="after">
+                    <field name="retirement_date" readonly="1" force_save="1"/>
+                </xpath>
+                <xpath expr="//label[@for='wage']" position="before">
+                    <field name="change_wage_ids">
+                        <tree string="Cambios salario basico" editable="top">
+                            <field name="date_start" required="1"/>
+                            <field name="wage" required="1"/>
+                        </tree>
+                    </field>
+                    <field name="date_last_wage"/>
+                    <field name="wage_old"/>
+                    <field name="fecha_ibc"/>
+                    <field name="u_ibc"/>
+                </xpath>
+                <xpath expr="//div[@name='wage']/field[@name='wage']" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                    <attribute name="force_save">True</attribute>
+                </xpath>
+                <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+                    <page string="Devengos y Deducciones" name="dev_and_ded">
+                        <group>
+                            <field name="concepts_ids" nolabel="1" colspan="2" context="{'default_type_employee': type_employee, 'default_contract_id': id,}">
+                                <tree string="Deducciones o Devengos, conceptos de nómina" editable="bottom">
+                                    <field name="type_employee" column_invisible="1"/>
+                                    <field name="contract_id"/>
+                                    <field name="input_id"/>
+                                    <field name="amount"/>
+                                    <field name="period"/>
+                                    <field name="aplicar"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="partner_id"/>
+                                    <field name="state" readonly="1"/>
+                                    <button name="change_state_done" type="object" invisible="state != 'draft'" string="Aprobar" class="oe_highlight"/>
+                                    <button name="change_state_cancel" type="object" invisible="state != 'done'" string="Cancelar / Finalizar" class="oe_highlight"/>
+                                </tree>
+                                <form>
+                                    <header>
+                                        <button name="change_state_done" type="object" invisible="state != 'draft'" string="Aprobar" class="oe_highlight"/>
+                                        <button name="change_state_cancel" type="object" invisible="state != 'done'" string="Cancelar / Finalizar" class="oe_highlight"/>
+                                        <field name="state" widget="statusbar"/>
+                                    </header>
+                                    <sheet string="Deducciones o Devengos, conceptos de nómina">
+                                        <group>
+                                            <group>
+                                                <field name="type_employee" invisible="1"/>
+                                                <field name="contract_id"/>
+                                                <field name="input_id"/>
+                                                <field name="amount"/>
+                                                <field name="period"/>
+                                                <field name="aplicar"/>
+                                            </group>
+                                            <group>
+                                                <field name="date_start"/>
+                                                <field name="date_end"/>
+                                                <field name="attached_name" invisible="1"/>
+                                                <field name="attached" widget="binary"/>
+                                            </group>
+                                            <group string="Entidades">
+                                                <field name="partner_id"/>
+                                                <field name="embargo_judged"/>
+                                                <field name="embargo_process"/>
+                                            </group>
+                                        </group>
+                                        <group col="4">
+                                            <field name="detail" colspan="4"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                    <page string="Tributaria" name="tributaria">
+                        <group>
+                            <field name="retention_procedure" widget="radio"/>
+                            <field name="fixed_value_retention_procedure"  invisible="retention_procedure != 'fixed'"/>
+                            <field name="deductions_rtf_ids" colspan="2">
+                                <tree string="hr.contract.deductions.rtf" editable="bottom">
+                                    <field name="input_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="number_months"/>
+                                    <field name="value_total"/>
+                                    <field name="value_monthly"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                    <page string="Modificaciones contractuales" name="modificaciones_contractuales">
+                        <button name="extend_contract" type="object" string="Prorrogar" class="oe_stat_button" icon="fa-expand"/>
+                        <group>
+                            <field name="contract_modification_history" nolabel="1" colspan="2">
+                                <tree editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="prorroga"/>
+                                    <field name="wage"/>
+                                    <field name="date"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="description"/>
+                                    <field name="attached"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- DEVENGOS & DEDUCCIONES VIEWS -->
+        <record id="lavish_menu_action_contract_concepts" model="ir.actions.act_window">
+            <field name="name">Devengos y Deducciones por Contrato</field>
+            <field name="res_model">hr.contract.concepts</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record model="ir.ui.view" id="lavish_hr_employee.list_contract_concepts">
+            <field name="name">lavish list contract concepts</field>
+            <field name="model">hr.contract.concepts</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="type_employee" invisible="1"/>
+                    <field name="contract_id"/>
+                    <field name="input_id"/>
+                    <field name="amount"/>
+                    <field name="period"/>
+                    <field name="aplicar"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="lavish_hr_employee.form_contract_concepts">
+            <field name="name">lavish form contract concepts</field>
+            <field name="model">hr.contract.concepts</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="change_state_done" type="object" invisible="state != 'draft'" string="Aprobar" class="oe_highlight"/>
+                        <button name="change_state_cancel" type="object" invisible="state != 'done'" string="Cancelar / Finalizar" class="oe_highlight"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="type_employee" invisible="1"/>
+                                <field name="contract_id"/>
+                                <field name="input_id"/>
+                                <field name="amount"/>
+                                <field name="period"/>
+                                <field name="aplicar"/>
+                            </group>
+                            <group>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="attached_name" invisible="1"/>
+                                <field name="attached" widget="binary"/>
+                            </group>
+                            <group string="Entidades">
+                                <field name="partner_id"/>
+                                <field name="embargo_judged"/>
+                                <field name="embargo_process"/>
+                            </group>
+                        </group>
+                        <group col="4">
+                            <field name="detail" colspan="4"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="search_contract_concepts" model="ir.ui.view">
+            <field name="name">lavish list contract concepts</field>
+            <field name="model">hr.contract.concepts</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="contract_id"/>
+                    <field name="input_id"/>
+                </search>
+            </field>
+        </record>
+
+    </data>
+</odoo>

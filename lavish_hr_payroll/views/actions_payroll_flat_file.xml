@@ -1,0 +1,82 @@
+<odoo>
+    <data>
+        <!-- Proceso de generar archivo plano de pago nómina -->
+        <record model="ir.actions.act_window" id="action_hr_payroll_flat_file">
+            <field name="name">Archivo plano de pago de nómina</field>
+            <field name="res_model">hr.payroll.flat.file</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <record model="ir.ui.view" id="lavish_hr_payroll.list_flat_file">
+            <field name="name">lavish flat_file</field>
+            <field name="model">hr.payroll.flat.file</field>
+            <field name="arch" type="xml">
+				<tree>
+                    <field name="payment_type" />
+                    <field name="description" />
+                    <field name="source_information" />
+                    <field name="payslip_id" invisible="source_information != 'lote'" required="source_information == 'lote'" />
+                    <field name="liquidations_ids" widget="many2many_tags" invisible="source_information == 'lote'" required="source_information != 'lote'" />
+                    <field name="transmission_date" />
+                    <field name="application_date" />
+				</tree>
+			</field>
+		</record>
+        <record id="hr_payroll_flat_file_form" model="ir.ui.view">
+            <field name="name">Archivo plano de pago de nómina</field>
+            <field name="model">hr.payroll.flat.file</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group class="oe_title" name="title" colspan="2">
+                            <h1 colspan="2">Generar archivo plano de pago de nómina</h1>
+                        </group>
+                        <group>
+                            <field name="payment_type"/>
+                            <field name="type" widget="radio"/>
+                            <field name="journal_id" />
+                            <field name="source_information" widget="radio"/>
+                            <field name="flat_rule_not_included"/>
+                            <field name="company_id"/>
+                            <field name="vat_payer"/>
+                            <field name="payslip_id" invisible="source_information != 'lote'" required="source_information == 'lote'" />
+                            <field name="liquidations_ids" widget="many2many_tags" invisible="source_information == 'lote'" required="source_information != 'lote'" />
+                            <field name="transmission_date"/>
+                            <field name="application_date"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <button name="generate_flat_file" string="Generar" type="object" class="oe_highlight"/>
+                        </group>
+                        <group class="oe_title" name="title" colspan="2">
+                            <h1 colspan="2">Archivos planos</h1>
+                        </group>
+                        <group>
+                            <field name="flat_file_detail_ids" colspan="2"  nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="journal_id"/>
+                                    <field name="plane_type"/>
+                                    <field name="txt_file_name" invisible="1"/>
+                                    <field name="txt_file" filename="txt_file_name"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="journal_id"/>
+                                        <field name="plane_type"/>
+<!--                                        <field name="txt_file_name" invisible="1"/>-->
+<!--                                        <field name="txt_file" filename="txt_file_name"/>-->
+<!--                                        <field name="excel_file_name" invisible="1"/>-->
+<!--                                        <field name="excel_file" filename="excel_file_name"/>-->
+                                        <button name="download_txt" string="Descargar Archivo Plano" type="object"/>
+                                        <button name="download_excel" string="Descargar Excel" type="object"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                    </sheet>
+                    <footer/>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
+      

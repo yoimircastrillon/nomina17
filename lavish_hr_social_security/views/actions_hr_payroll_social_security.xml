@@ -1,0 +1,265 @@
+<odoo>
+    <data>
+        <!-- Seguridad social -->
+        <record model="ir.actions.act_window" id="action_hr_payroll_social_security">
+            <field name="name">Seguridad Social</field>
+            <field name="res_model">hr.payroll.social.security</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Crear record rule para filtrar las compañias-->
+        <record id="rule_hr_payroll_social_security_company" model="ir.rule">
+            <field name="name">Permisos compañia Seguridad social</field>
+            <field name="model_id" ref="model_hr_payroll_social_security"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>                
+        </record>
+
+        <record model="ir.ui.view" id="hr_payroll_social_security_list">
+            <field name="name">hr payroll social security list</field>
+            <field name="model">hr.payroll.social.security</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="year"/>
+                    <field name="month"/>
+                    <field name="company_id"/>
+                    <field name="observations"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="hr_payroll_social_security_form">
+            <field name="name">hr payroll social security form</field>
+            <field name="model">hr.payroll.social.security</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="executing_social_security" type="object" string="Seguridad Social" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="get_plano" type="object" string="Generar Plano" class="oe_highlight" invisible="state not in ['done', 'accounting']"/>
+                        <button name="get_accounting" type="object" string="Contabilizar" class="oe_highlight" invisible="state != 'done'"/>
+                        <button name="cancel_process" type="object" string="Cancelar" invisible="state != 'done'"/>
+                        <button name="restart_accounting" type="object" string="Reiniciar Contabilización" invisible="state != 'accounting'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group string="Periodo">
+                                <field name="year"/>
+                                <field name="month"/>
+                            </group>
+                            <group string="Observaciones">
+                                <field name="observations" nolabel="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>                            
+                        </group>
+                        <hr style="border-style:solid;border-width:2px;width:100%;"/>
+                        <h2 style="text-align:center">Proceso</h2>
+                        <notebook>
+                            <page string="Ejecución" name="ejecucion">
+                                <group>
+                                    <field name="executing_social_security_ids" readonly="1" nolabel="1" colspan="2">
+                                        <tree>
+                                            <field name="employee_id"/>
+                                            <field name="branch_id" optional="show"/>
+                                            <field name="contract_id" optional="hide"/>
+                                            <field name="nDiasLiquidados" optional="show"/>
+                                            <field name="nDiasIncapacidadEPS" optional="hide"/>
+                                            <field name="nDiasLicencia" optional="hide"/>
+                                            <field name="nDiasLicenciaRenumerada" optional="hide"/>
+                                            <field name="nDiasMaternidad" optional="hide"/>
+                                            <field name="nDiasVacaciones" optional="hide"/>
+                                            <field name="nDiasIncapacidadARP" optional="hide"/>
+                                            <field name="nIngreso" optional="hide"/>
+                                            <field name="nRetiro" optional="hide"/>
+                                            <field name="nSueldo" optional="show"/>
+                                            <field name="TerceroEPS" optional="hide"/>
+                                            <field name="nValorBaseSalud" optional="hide"/>
+                                            <field name="nPorcAporteSaludEmpleado" optional="hide"/>
+                                            <field name="nValorSaludEmpleado" optional="hide"/>
+                                            <field name="nValorSaludEmpleadoNomina" optional="hide"/>
+                                            <field name="nPorcAporteSaludEmpresa" optional="hide"/>
+                                            <field name="nValorSaludEmpresa" optional="hide"/>
+                                            <field name="nValorSaludTotal" optional="hide"/>
+                                            <field name="nDiferenciaSalud" optional="hide"/>
+                                            <field name="TerceroPension" optional="hide"/>
+                                            <field name="nValorBaseFondoPension" optional="hide"/>
+                                            <field name="nPorcAportePensionEmpleado" optional="hide"/>
+                                            <field name="nValorPensionEmpleado" optional="hide"/>
+                                            <field name="nValorPensionEmpleadoNomina" optional="hide"/>
+                                            <field name="nPorcAportePensionEmpresa" optional="hide"/>
+                                            <field name="nValorPensionEmpresa" optional="hide"/>
+                                            <field name="nValorPensionTotal" optional="hide"/>
+                                            <field name="nDiferenciaPension" optional="hide"/>
+                                            <field name="cAVP" optional="hide"/>
+                                            <field name="nAporteVoluntarioPension" optional="hide"/>
+                                            <field name="TerceroFondoSolidaridad" optional="hide"/>
+                                            <field name="nPorcFondoSolidaridad" optional="hide"/>
+                                            <field name="nValorFondoSolidaridad" optional="hide"/>
+                                            <field name="nValorFondoSubsistencia" optional="hide"/>
+                                            <field name="TerceroARP" optional="hide"/>
+                                            <field name="nValorBaseARP" optional="hide"/>
+                                            <field name="nPorcAporteARP" optional="hide"/>
+                                            <field name="nValorARP" optional="hide"/>
+                                            <field name="cExonerado1607" optional="hide"/>
+                                            <field name="TerceroCajaCom" optional="hide"/>
+                                            <field name="nValorBaseCajaCom" optional="hide"/>
+                                            <field name="nPorcAporteCajaCom" optional="hide"/>
+                                            <field name="nValorCajaCom" optional="hide"/>
+                                            <field name="TerceroSENA" optional="hide"/>
+                                            <field name="nValorBaseSENA" optional="hide"/>
+                                            <field name="nPorcAporteSENA" optional="hide"/>
+                                            <field name="nValorSENA" optional="hide"/>
+                                            <field name="TerceroICBF" optional="hide"/>
+                                            <field name="nValorBaseICBF" optional="hide"/>
+                                            <field name="nPorcAporteICBF" optional="hide"/>
+                                            <field name="nValorICBF" optional="hide"/>
+                                            <field name="leave_id" optional="hide"/>
+                                            <field name="dFechaInicioSLN" optional="hide"/>
+                                            <field name="dFechaFinSLN" optional="hide"/>
+                                            <field name="dFechaInicioIGE" optional="hide"/>
+                                            <field name="dFechaFinIGE" optional="hide"/>
+                                            <field name="dFechaInicioLMA" optional="hide"/>
+                                            <field name="dFechaFinLMA" optional="hide"/>
+                                            <field name="dFechaInicioVACLR" optional="hide"/>
+                                            <field name="dFechaFinVACLR" optional="hide"/>
+                                            <field name="dFechaInicioVCT" optional="hide"/>
+                                            <field name="dFechaFinVCT" optional="hide"/>
+                                            <field name="dFechaInicioIRL" optional="hide"/>
+                                            <field name="dFechaFinIRL" optional="hide"/>
+                                        </tree>
+                                        <form>
+                                            <header>
+                                                <button class="oe_highlight" name="executing_social_security_employee" string="Recalcular" type="object"/>
+                                            </header>
+                                            <sheet>
+                                                <group>
+                                                    <group string="Info Empleado">
+                                                        <field name="executing_social_security_id"/>
+                                                        <field name="employee_id"/>
+                                                        <field name="branch_id"/>
+                                                        <field name="contract_id"/>
+                                                        <field name="analytic_account_id"/>
+                                                        <field name="nSueldo"/>
+                                                        <field name="nNumeroHorasLaboradas"/>
+                                                        <field name="nIngreso"/>
+                                                        <field name="nRetiro"/>
+                                                        <field name="cExonerado1607"/>
+                                                    </group>
+                                                    <group string="Días">
+                                                        <field name="nDiasLiquidados"/>
+                                                        <field name="nDiasIncapacidadEPS"/>
+                                                        <field name="nDiasLicencia"/>
+                                                        <field name="nDiasLicenciaRenumerada"/>
+                                                        <field name="nDiasMaternidad"/>
+                                                        <field name="nDiasVacaciones"/>
+                                                        <field name="nDiasIncapacidadARP"/>
+                                                    </group>
+                                                    <group string="Salud">
+                                                        <field name="TerceroEPS"/>
+                                                        <field name="nValorBaseSalud"/>
+                                                        <field name="nPorcAporteSaludEmpleado"/>
+                                                        <field name="nValorSaludEmpleado"/>
+                                                        <field name="nValorSaludEmpleadoNomina"/>
+                                                        <field name="nPorcAporteSaludEmpresa"/>
+                                                        <field name="nValorSaludEmpresa"/>
+                                                        <field name="nValorSaludTotal"/>
+                                                        <field name="nDiferenciaSalud"/>
+                                                    </group>
+                                                    <group string="Pensión">
+                                                        <field name="TerceroPension"/>
+                                                        <field name="nValorBaseFondoPension"/>
+                                                        <field name="nPorcAportePensionEmpleado"/>
+                                                        <field name="nValorPensionEmpleado"/>
+                                                        <field name="nValorPensionEmpleadoNomina"/>
+                                                        <field name="nPorcAportePensionEmpresa"/>
+                                                        <field name="nValorPensionEmpresa"/>
+                                                        <field name="nValorPensionTotal"/>
+                                                        <field name="nDiferenciaPension"/>
+                                                        <field name="cAVP"/>
+                                                        <field name="nAporteVoluntarioPension"/>
+                                                    </group>
+                                                    <group string="ARP">
+                                                        <field name="TerceroARP"/>
+                                                        <field name="nValorBaseARP"/>
+                                                        <field name="nPorcAporteARP"/>
+                                                        <field name="nValorARP"/>
+                                                    </group>
+                                                    <group string="Fondo de solidaridad y subsistencia">
+                                                        <field name="TerceroFondoSolidaridad"/>
+                                                        <field name="nPorcFondoSolidaridad"/>
+                                                        <field name="nValorFondoSolidaridad"/>
+                                                        <field name="nValorFondoSubsistencia"/>
+                                                    </group>
+                                                    <group string="Caja de compensación">
+                                                        <field name="TerceroCajaCom"/>
+                                                        <field name="nValorBaseCajaCom"/>
+                                                        <field name="nPorcAporteCajaCom"/>
+                                                        <field name="nValorCajaCom"/>
+                                                    </group>
+                                                    <group string="SENA">
+                                                        <field name="TerceroSENA"/>
+                                                        <field name="nValorBaseSENA"/>
+                                                        <field name="nPorcAporteSENA"/>
+                                                        <field name="nValorSENA"/>
+                                                    </group>
+                                                    <group string="ICBF">
+                                                        <field name="TerceroICBF"/>
+                                                        <field name="nValorBaseICBF"/>
+                                                        <field name="nPorcAporteICBF"/>
+                                                        <field name="nValorICBF"/>
+                                                    </group>
+                                                    <group string="Ausencia y fechas">
+                                                        <field name="leave_id"/>
+                                                        <field name="dFechaInicioSLN"/>
+                                                        <field name="dFechaFinSLN"/>
+                                                        <field name="dFechaInicioIGE"/>
+                                                        <field name="dFechaFinIGE"/>
+                                                        <field name="dFechaInicioLMA"/>
+                                                        <field name="dFechaFinLMA"/>
+                                                        <field name="dFechaInicioVACLR"/>
+                                                        <field name="dFechaFinVACLR"/>
+                                                        <field name="dFechaInicioVCT"/>
+                                                        <field name="dFechaFinVCT"/>
+                                                        <field name="dFechaInicioIRL"/>
+                                                        <field name="dFechaFinIRL"/>
+                                                    </group>
+                                                </group>
+                                            </sheet>
+                                        </form>
+                                    </field>                                    
+                                </group>
+                                <group>
+                                    <field name="time_process" readonly="1"/>
+                                    <field name="move_id" readonly="1"/>
+                                </group>
+                                <br/>
+                                <br/>
+                                <button name="get_excel" type="object" string="Generar Excel"/>		
+                            </page>
+                            <page string="Advertencias" name="advertencias">
+                                <group>
+                                    <field name="errors_social_security_ids" readonly="1" nolabel="1" colspan="2">
+                                        <tree>
+                                            <field name="employee_id"/>
+                                            <field name="branch_id" optional="show"/>                                            
+                                            <field name="description" optional="show"/>
+                                        </tree>
+                                    </field>                                    
+                                </group>
+                                <button name="get_excel_errors" type="object" string="Generar Excel"/>		
+                            </page>
+                        </notebook>
+                        <hr style="border-style:solid;border-width:2px;width:100%;"/>
+                        <h2 style="text-align:center">Plano</h2>
+                        <group>
+                            <field name="presentation_form" widget="radio"/>
+                            <field name="branch_social_security_id" />
+                            <field name="work_center_social_security_id"  domain="[('branch_social_security_id', '=', branch_social_security_id)]"/>                            
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
